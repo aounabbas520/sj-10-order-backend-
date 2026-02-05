@@ -11,11 +11,5 @@
       "src": "/(.*)",
       "dest": "api/index.js"
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/sync-financials",
-      "schedule": "*/10 * * * *"
-    }
   ]
 }
