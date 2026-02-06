@@ -4,11 +4,11 @@ const internalController = require('../controllers/internalController');
 // Middleware to verify Vercel Cron request
 const verifyCron = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    // Vercel sends "Bearer <CRON_SECRET>"
-    // Also allow local development testing if needed
-    if (authHeader === `Bearer ${process.env.CRON_SECRET}` || process.env.NODE_ENV === 'development') {
+    // Strict comparison
+    if (authHeader === `Bearer ${process.env.CRON_SECRET}`) {
         next();
     } else {
+        // Return 401 without exposing debug info
         return res.status(401).json({ message: "Unauthorized Cron Request" });
     }
 };
