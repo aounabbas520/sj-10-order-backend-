@@ -16,7 +16,16 @@ const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+    origin: [
+        "https://www.sj10.pk",
+        "https://sj10.pk",
+        "http://localhost:3000"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"],
+    credentials: true
+}));
 app.use(express.json());
 app.use(compression());
 
