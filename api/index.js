@@ -17,15 +17,14 @@ const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 const app = express();
 
 app.use(cors({
-    origin: [
-        "https://www.sj10.pk",
-        "https://sj10.pk",
-        "http://localhost:3000"
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"],
-    credentials: true
+    origin:['https://www.sj10.pk', 'http://localhost:3000'], // Allow your frontend domains
+    methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],     // Allow these HTTP methods
+    allowedHeaders:['Content-Type', 'Authorization', 'x-internal-api-key'], // Allow these headers
+    credentials: true // Required if you are passing tokens/cookies
 }));
+
+// Add this line right below it to ensure preflight requests are explicitly handled
+app.options('*', cors());
 app.use(express.json());
 app.use(compression());
 
