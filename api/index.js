@@ -25,23 +25,18 @@ const allowedOrigins = [
 
 
 app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      // If the origin is not in the list, technically we should block it,
-      // but to fix your specific error quickly, we can allow it dynamically:
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"],
-  credentials: true
+    origin: [
+        "https://www.sj10.pk", 
+        "https://sj10.pk", 
+        "http://localhost:3000", 
+        "http://localhost:4004"
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"]
 }));
 
-// Explicitly handle Preflight requests
+// Explicitly handle the Preflight (OPTIONS) request
 app.options('*', cors());
 app.use(express.json());
 app.use(compression());
