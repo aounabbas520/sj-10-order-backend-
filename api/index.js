@@ -15,14 +15,8 @@ const cronRoutes = require('../routes/cronRoutes'); // <--- NEW IMPORT
 const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 
 const app = express();
-app.use(cors({
-  origin: ["https://www.sj10.pk", "https://sj10.pk"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"],
-  credentials: true,
-}));
 
-app.options("*", cors());
+app.use(cors());
 app.use(express.json());
 app.use(compression());
 
@@ -52,6 +46,11 @@ app.get('/', (req, res) => {
     res.json({ status: "SJ10 Orders & Auth Service is Running 🛡️" });
 });
 
-const serverless = require('serverless-http');
-module.exports = serverless(app);
-
+module.exports = app;
+if (require.main === module) {
+    const PORT = process.env.PORT || 4004;
+    app.listen(PORT, () => {
+        console.log(`\n🚀 Server is running locally on: http://localhost:${PORT}`);
+        console.log(`👉 Test Health Check: http://localhost:${PORT}/`);
+    });
+}
