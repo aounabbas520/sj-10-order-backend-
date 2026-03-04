@@ -16,15 +16,25 @@ const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 
 const app = express();
 
-app.use(cors({
-    origin:['https://www.sj10.pk', 'http://localhost:3000'], // Allow your frontend domains
-    methods:['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],     // Allow these HTTP methods
-    allowedHeaders:['Content-Type', 'Authorization', 'x-internal-api-key'], // Allow these headers
-    credentials: true // Required if you are passing tokens/cookies
-}));
+// 1. MANUAL CORS HEADER INJECTION (Place this before EVERYTHING else)
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins = ['https://www.sj10.pk', 'http://localhost:3000'];
+    
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-internal-api-key');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-// Add this line right below it to ensure preflight requests are explicitly handled
-app.options('*', cors());
+    // Handle Preflight
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+    next();
+});
 app.use(express.json());
 app.use(compression());
 
