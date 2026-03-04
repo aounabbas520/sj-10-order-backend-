@@ -15,26 +15,13 @@ const cronRoutes = require('../routes/cronRoutes'); // <--- NEW IMPORT
 const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 
 const app = express();
-
-// 1. MANUAL CORS HEADER INJECTION (Place this before EVERYTHING else)
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    const allowedOrigins = ['https://www.sj10.pk', 'http://localhost:3000'];
-    
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-internal-api-key');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-
-    // Handle Preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
-    next();
-});
+app.options('*', cors());
+app.use(cors({
+  origin: ['https://www.sj10.pk', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-internal-api-key']
+}));
 app.use(express.json());
 app.use(compression());
 
