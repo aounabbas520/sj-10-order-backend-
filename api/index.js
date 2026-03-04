@@ -16,27 +16,36 @@ const dashboardRoutes = require('../routes/dashboardRoutes');
 
 const app = express();
 
-// --- START OF CORS FIX ---
-// 1. Define the config object separately so we can use it twice
-const corsOptions = {
-    origin: [
-        "https://www.sj10.pk", 
-        "https://sj10.pk", 
-        "http://localhost:3000", 
-        "http://localhost:4004"
-    ],
+// Define allowed origins
+const allowedOrigins = [
+  'https://www.sj10.pk',
+  'https://sj10.pk',
+  'http://localhost:3000',
+  'http://localhost:4004'
+];
+
+// --- ROBUST CORS CONFIGURATION ---
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            return callback(null, true);
+        } else {
+            // Optional: Block unknown origins, or allow them for debugging
+            // return callback(new Error('Not allowed by CORS'));
+            console.log("Blocked Origin:", origin);
+            return callback(null, false);
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true, // This allows cookies/auth headers
+    credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"]
-};
+}));
 
-// 2. Apply CORS to all normal requests
-app.use(cors(corsOptions));
-
-// 3. Apply CORS to Preflight (OPTIONS) requests
-// (The previous error happened because 'corsOptions' was missing here)
-app.options('*', cors(corsOptions));
-// --- END OF CORS FIX ---
+// Handle Preflight for all routes
+app.options('*', cors());
 
 app.use(express.json());
 app.use(compression());
@@ -62,7 +71,7 @@ app.use('/api/internal', internalApiKeyAuth, internalRoutes);
 app.use('/api/cron', cronRoutes); 
 app.use('/api/dashboard', dashboardRoutes); 
 
-// Health Check
+// Health 
 app.get('/', (req, res) => {
     res.json({ status: "SJ10 Orders & Auth Service is Running 🛡️" });
 });
