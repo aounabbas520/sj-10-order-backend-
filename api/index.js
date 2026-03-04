@@ -11,20 +11,14 @@ const walletRoutes = require('../routes/walletRoutes');
 const chatRoutes = require('../routes/chatRoutes');
 const notificationRoutes = require('../routes/notificationRoutes');
 const internalRoutes = require('../routes/internalRoutes');
-const cronRoutes = require('../routes/cronRoutes'); // <--- NEW IMPORT
-const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
+const cronRoutes = require('../routes/cronRoutes'); 
+const dashboardRoutes = require('../routes/dashboardRoutes'); 
 
 const app = express();
-// Define allowed origins
-const allowedOrigins = [
-  'https://www.sj10.pk',
-  'https://sj10.pk',
-  'http://localhost:3000', // Keep localhost for your testing
-  'http://localhost:4004'
-];
 
-
-app.use(cors({
+// --- START OF CORS FIX ---
+// 1. Define the config object separately so we can use it twice
+const corsOptions = {
     origin: [
         "https://www.sj10.pk", 
         "https://sj10.pk", 
@@ -32,12 +26,18 @@ app.use(cors({
         "http://localhost:4004"
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
+    credentials: true, // This allows cookies/auth headers
     allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"]
-}));
+};
 
-// Explicitly handle the Preflight (OPTIONS) request
-app.options('*', cors());
+// 2. Apply CORS to all normal requests
+app.use(cors(corsOptions));
+
+// 3. Apply CORS to Preflight (OPTIONS) requests
+// (The previous error happened because 'corsOptions' was missing here)
+app.options('*', cors(corsOptions));
+// --- END OF CORS FIX ---
+
 app.use(express.json());
 app.use(compression());
 
@@ -59,8 +59,8 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/chats', chatRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/internal', internalApiKeyAuth, internalRoutes);
-app.use('/api/cron', cronRoutes); // <--- NEW ROUTE MOUNTING
-app.use('/api/dashboard', dashboardRoutes); // <--- Add this line
+app.use('/api/cron', cronRoutes); 
+app.use('/api/dashboard', dashboardRoutes); 
 
 // Health Check
 app.get('/', (req, res) => {
