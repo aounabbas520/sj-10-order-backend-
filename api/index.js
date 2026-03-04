@@ -58,11 +58,6 @@ app.get('/', (req, res) => {
     res.json({ status: "SJ10 Orders & Auth Service is Running 🛡️" });
 });
 
-module.exports = app;
-if (require.main === module) {
-    const PORT = process.env.PORT || 4004;
-    app.listen(PORT, () => {
-        console.log(`\n🚀 Server is running locally on: http://localhost:${PORT}`);
-        console.log(`👉 Test Health Check: http://localhost:${PORT}/`);
-    });
-}
+const serverless = require('serverless-http');
+module.exports = serverless(app);
+

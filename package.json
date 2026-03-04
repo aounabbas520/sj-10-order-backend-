@@ -20,6 +20,7 @@
     "mysql2": "^3.6.0",
     "nodemailer": "^7.0.13",
     "react-phone-input-2": "^2.15.1",
+    "serverless-http": "^4.0.0",
     "streamifier": "^0.1.1",
     "uuid": "^9.0.1",
     "web-push": "^3.6.0"
