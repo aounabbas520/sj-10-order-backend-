@@ -1,6 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
+// const cors = require('cors'); // <--- We are removing this dependency to use manual headers
 const compression = require('compression');
 
 // Routes Import
@@ -16,36 +16,47 @@ const dashboardRoutes = require('../routes/dashboardRoutes');
 
 const app = express();
 
-// Define allowed origins
-const allowedOrigins = [
-  'https://www.sj10.pk',
-  'https://sj10.pk',
-  'http://localhost:3000',
-  'http://localhost:4004'
-];
+// =========================================================================
+// 🔥 MANUAL CORS FIX (The "Nuclear Option")
+// This replaces the 'cors' library to force headers on Vercel
+// =========================================================================
+app.use((req, res, next) => {
+    const allowedOrigins = [
+        'https://www.sj10.pk',
+        'https://sj10.pk',
+        'http://localhost:3000',
+        'http://localhost:4004'
+    ];
 
-// --- ROBUST CORS CONFIGURATION ---
-app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            return callback(null, true);
-        } else {
-            // Optional: Block unknown origins, or allow them for debugging
-            // return callback(new Error('Not allowed by CORS'));
-            console.log("Blocked Origin:", origin);
-            return callback(null, false);
-        }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization", "x-internal-api-key"]
-}));
+    const origin = req.headers.origin;
 
-// Handle Preflight for all routes
-app.options('*', cors());
+    // 1. Allow the specific Origin if it's in our list
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } 
+    // Optional: Allow non-browser requests (Postman, Mobile Apps) that have no origin
+    else if (!origin) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+    }
+
+    // 2. Allow Credentials (Cookies, Authorization headers)
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    // 3. Allow specific HTTP Methods
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+
+    // 4. Allow specific Headers (Auth, Content-Type, custom keys)
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-internal-api-key');
+
+    // 5. Handle Preflight (OPTIONS) requests immediately
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
+    // Pass to next middleware
+    next();
+});
+// =========================================================================
 
 app.use(express.json());
 app.use(compression());
@@ -71,7 +82,7 @@ app.use('/api/internal', internalApiKeyAuth, internalRoutes);
 app.use('/api/cron', cronRoutes); 
 app.use('/api/dashboard', dashboardRoutes); 
 
-// Health 
+// Health Check
 app.get('/', (req, res) => {
     res.json({ status: "SJ10 Orders & Auth Service is Running 🛡️" });
 });
