@@ -15,13 +15,20 @@ const cronRoutes = require('../routes/cronRoutes'); // <--- NEW IMPORT
 const dashboardRoutes = require('../routes/dashboardRoutes'); // <--- Import
 
 const app = express();
-app.options('*', cors());
-app.use(cors({
-  origin: ['https://www.sj10.pk', 'http://localhost:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'x-internal-api-key']
-}));
+app.use(cors());
+
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://www.sj10.pk");
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization,x-internal-api-key");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
+});
 app.use(express.json());
 app.use(compression());
 
